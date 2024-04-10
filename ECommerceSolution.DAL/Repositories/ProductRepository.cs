@@ -32,7 +32,7 @@ namespace ECommerceSolution.DAL.Repositories
 
         public async Task<Product> GetProductByIdAsync(string id)
         {
-            return await _products.Find<Product>(p => p.Id == id).FirstOrDefaultAsync();
+            return await _products.Find(p => p.Id == id).FirstOrDefaultAsync();
         }
 
         public async Task<bool> UpdateProductAsync(string id, Product product)
