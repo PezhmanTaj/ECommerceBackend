@@ -115,10 +115,6 @@ namespace ECommerceSolution.Tests
             Assert.That(resultDTO.Id, Is.EqualTo(expectedProductDTO.Id));
 
         }
-        //public async Task<bool> UpdateProductAsync(string id, ProductDTO product)
-        //{
-        //    return await _productRepository.UpdateProductAsync(id, _mapper.Map<Product>(product));
-        //}
 
         [Test]
         public async Task UpdateProductAsync_ReturnsTrue()

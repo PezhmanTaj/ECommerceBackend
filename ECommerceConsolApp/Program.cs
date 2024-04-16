@@ -48,15 +48,19 @@ class Program
         // Example usage of the productService
         var newProductDTO = new ProductDTO
         {
-            Title = "Test3 Product",
+            Title = "Test39998 Product",
             Price = 8.88,
             // Other property setups...
         };
 
         // Assuming CreateProductAsync is a method in your IProductService interface
-        await productService.CreateProductAsync(newProductDTO);
+        IEnumerable<ProductDTO> products = await productService.GetAllProductsAsync();
 
         Console.WriteLine("Product inserted successfully.");
+        foreach (var item in products)
+        {
+            Console.WriteLine(item.Title);
+        }
         Console.ReadKey();
     }
 }

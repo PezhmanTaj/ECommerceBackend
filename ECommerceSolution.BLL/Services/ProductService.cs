@@ -53,9 +53,14 @@ namespace ECommerceSolution.BLL.Services
             return _mapper.Map<ProductDTO>(product);
         }
 
-        public async Task<bool> UpdateProductAsync(string id, ProductDTO product)
+        public async Task<bool> UpdateProductAsync(string id, ProductDTO productDTO)
         {
-            return await _productRepository.UpdateProductAsync(id, _mapper.Map<Product>(product));
+            ValidationResult validationResult = await _validator.ValidateAsync(productDTO);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+            return await _productRepository.UpdateProductAsync(id, _mapper.Map<Product>(productDTO));
         }
     }
 }
