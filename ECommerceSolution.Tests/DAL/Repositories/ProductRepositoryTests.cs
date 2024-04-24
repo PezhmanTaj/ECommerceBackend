@@ -17,14 +17,12 @@ public class ProductRepositoryTests
     private readonly Mock<IMongoCollection<Product>> _mockCollection;
     private readonly ProductRepository _repository;
     private readonly Mock<IAsyncCursor<Product>> _mockCursor;
-    private readonly Product _testProduct;
 
     
     public ProductRepositoryTests()
     {
         _mockContext = new Mock<IMongoDBContext>();
         _mockCollection = new Mock<IMongoCollection<Product>>();
-        _testProduct = new Product { Title = "test", Price = 9.99};
         _mockCursor = new Mock<IAsyncCursor<Product>>();
         _mockContext.Setup(c => c.GetCollection<Product>(It.IsAny<string>()))
             .Returns(_mockCollection.Object);
@@ -36,12 +34,13 @@ public class ProductRepositoryTests
     public async Task AddProductAsync_CallsInsertOneAsync()
     {
         // Arrange
-        _mockCollection.Setup(x => x.InsertOneAsync(_testProduct, null, default))
+        Product testProduct = new Product { Title = "test", Price = 9.99 };
+        _mockCollection.Setup(x => x.InsertOneAsync(testProduct, null, default))
             .Returns(Task.CompletedTask)
             .Verifiable(); 
 
         // Act
-        await _repository.AddProductAsync(_testProduct);
+        await _repository.AddProductAsync(testProduct);
 
         // Assert
         _mockCollection.Verify(); 
@@ -135,6 +134,34 @@ public class ProductRepositoryTests
         // Assert
         Assert.IsTrue(result);
     }
+
+    [Test]
+    public async Task GetProductsBySellerId_ReturnSellerProduct()
+    {
+
+        // Arrange
+        string sellerId = "sellerId";
+        var expectedProducts = new List<Product> { new Product() { OwnerUserId = sellerId }, new Product() { OwnerUserId = sellerId } };
+        _mockCursor.SetupSequence(_ => _.MoveNextAsync(default))
+                   .ReturnsAsync(true)
+                   .ReturnsAsync(false);
+        _mockCursor.Setup(_ => _.Current).Returns(expectedProducts);
+        _mockCollection.Setup(x => x.FindAsync(It.IsAny<FilterDefinition<Product>>(),
+                                               It.IsAny<FindOptions<Product, Product>>(),
+                                               default))
+                       .ReturnsAsync(_mockCursor.Object);
+
+        // Act
+        var products = await _repository.GetAllProductsAsync();
+
+        // Assert
+        Assert.IsNotNull(products);
+        Assert.That(products.Count(), Is.EqualTo(2));
+        Assert.IsTrue(products.All(p => p.OwnerUserId == sellerId));
+    }
+
+
+
 }
 
 

@@ -9,6 +9,8 @@ namespace ECommerceSolution.DAL.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string OwnerUserId { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
         public double Price { get; set; }
@@ -22,17 +24,5 @@ namespace ECommerceSolution.DAL.Models
         public List<string>? ColorIds { get; set; }
         public StockStatus? StockStatus { get; set; }
 
-
-
-    }
-
-    public enum StockStatus
-    {
-        Available,
-        OutOfStock,
-        AvailableForPreOrder,
-        Backordered,
-        AvailableByOrder,
-        Discontinued
     }
 }

@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 using ECommerceSolution.BLL.DTOs;
 using ECommerceSolution.BLL.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,6 +42,7 @@ namespace ECommerceSolution.Api.Controllers
         }
 
         // Update
+        [Authorize(Roles = "Admin, Seller")]
         [HttpPut("{id}")]
         public async Task<ActionResult<bool>> UpdateProductAsync(string id, [FromBody]ProductDTO product)
         {
@@ -66,6 +69,7 @@ namespace ECommerceSolution.Api.Controllers
         }
 
         // Delete
+        [Authorize(Roles = "Admin, Seller")]
         [HttpDelete ("{id}")]
         public async Task<ActionResult<bool>> DeleteProductAsync(string id)
         {
@@ -79,7 +83,7 @@ namespace ECommerceSolution.Api.Controllers
             return NoContent();
 
         }
-
+        [Authorize(Roles = "Admin, Seller")]
         [HttpPost]
         public async Task<IActionResult> CreateProductAsync([FromBody] ProductDTO product)
         {

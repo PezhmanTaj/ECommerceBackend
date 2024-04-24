@@ -35,6 +35,11 @@ namespace ECommerceSolution.DAL.Repositories
             return await _products.Find(p => p.Id == id).FirstOrDefaultAsync();
         }
 
+        public async Task<IEnumerable<Product>> GetProductsBySellerId(string sellerId)
+        {
+            return await _products.Find(p => p.OwnerUserId == sellerId).ToListAsync();
+        }
+
         public async Task<bool> UpdateProductAsync(string id, Product product)
         {
             var result = await _products.ReplaceOneAsync(p => p.Id == id, product);

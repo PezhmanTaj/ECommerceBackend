@@ -6,52 +6,101 @@ using ECommerceSolution.BLL.Validators;
 using ECommerceSolution.DAL.Interfaces;
 using ECommerceSolution.DAL.Repositories;
 using FluentValidation;
-using Microsoft.Extensions.DependencyInjection; // Ensure you have this using directive for IServiceCollection
-using AutoMapper; // Ensure this if you're using AutoMapper
+using Microsoft.Extensions.DependencyInjection;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using ECommerceSolution.BLL.PasswordHashers;
+using AspNetCoreRateLimit;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the DI container.
+// Configure Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+// Configure Authorization
+builder.Services.AddAuthorization();
+
+// HttpContext Accessor
+builder.Services.AddHttpContextAccessor();
+
+// User Context Dependency
+builder.Services.AddScoped<IUserContext, UserContextService>();
+
+// Controllers with JSON Options
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
 });
+
+// API Documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Cross-Origin Resource Sharing
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost3000",
-        builder =>
-        {
-            builder.WithOrigins("http://localhost:3000")
-                   .AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowCredentials();
-                    
-        });
+    options.AddPolicy("AllowLocalhost3000", builder =>
+    {
+        builder.WithOrigins("http://localhost:3000")
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials();
+    });
 });
 
-// MongoDB context configuration
+// Database Context Configuration
 var connectionString = "mongodb://localhost:27017";
 var databaseName = "test";
 builder.Services.AddSingleton<IMongoDBContext>(_ => new MongoDBContext(connectionString, databaseName));
 
-// Repository registration
+// Repository Configuration
 builder.Services.AddTransient<IProductRepository, ProductRepository>();
+builder.Services.AddTransient<IUserRepository, UserRepository>();
 
-// AutoMapper configuration
-builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(MappingProfile).Assembly); 
+// AutoMapper Configuration
+builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(MappingProfile).Assembly);
 
-// Validator registration - Assuming you're using FluentValidation
+// Password Hasher
+builder.Services.AddTransient<IPasswordHasher, BCryptPasswordHasher>();
+
+// Token Service
+builder.Services.AddTransient<ITokenService, TokenService>();
+
+// Validators
 builder.Services.AddTransient<IValidator<ProductDTO>, ProductValidator>();
+builder.Services.AddTransient<IValidator<UserRegistrationDTO>, UserValidator>();
 
-// Service registration
+// Service Layer
 builder.Services.AddTransient<IProductService, ProductService>();
+builder.Services.AddTransient<IUserService, UserService>();
+
+// Rate Limiting Configuration
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Middleware Configuration
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -59,7 +108,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowLocalhost3000");
+app.UseIpRateLimiting();
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
