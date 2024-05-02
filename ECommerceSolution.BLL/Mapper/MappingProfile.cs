@@ -50,6 +50,11 @@ namespace ECommerceSolution.BLL.Mapper
                 .ForMember(dest => dest.SEOKeywords, opt => opt.MapFrom(src => src.SEOKeywords))
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive)).ReverseMap();
 
+            CreateMap<OrderItem, OrderItemDTO>().ReverseMap();
+            CreateMap<Order, OrderDTO>().ReverseMap();
+            CreateMap<Order, OrderDetailDTO>().ReverseMap();
+            CreateMap<Order, OrderListDTO>().ReverseMap();
+            CreateMap<Address, AddressDTO>().ReverseMap();
         }
     }
 }

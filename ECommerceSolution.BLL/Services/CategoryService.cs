@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ECommerceSolution.BLL.DTOs;
 using ECommerceSolution.DAL.Repositories;
 using AutoMapper;
+using ECommerceSolution.DAL.Interfaces;
 
 public class CategoryService : ICategoryService
 {

@@ -152,7 +152,7 @@ public class ProductRepositoryTests
                        .ReturnsAsync(_mockCursor.Object);
 
         // Act
-        var products = await _repository.GetAllProductsAsync();
+        var products = await _repository.GetProductsBySellerId(sellerId);
 
         // Assert
         Assert.IsNotNull(products);
