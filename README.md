@@ -11,6 +11,7 @@ This project is in its early stages, with about 30% of the planned functionality
 - **AutoMapper**: Facilitates object-object mapping in .NET.
 - **FluentValidation**: Used for robust validation mechanisms in the business logic layer.
 - **NUnit**: Ensures quality and reliability through extensive unit tests.
+- **AspNetCoreRateLimit**: Implements rate limiting to protect the API from abuse and manage traffic effectively.
 
 ## Architecture
 The backend is divided into the following main components:
@@ -18,7 +19,3 @@ The backend is divided into the following main components:
 - **BLL**: Contains business rules and logic, data transformations, and service layer definitions.
 - **API**: Serves as the interface between the frontend and the backend, handling client requests and responses.
 
-## Features
-- Secure authentication and authorization.
-- Comprehensive rate limiting to prevent abuse.
-- Cross-Origin Resource Sharing (CORS) setup to allow requests from specific origins.
